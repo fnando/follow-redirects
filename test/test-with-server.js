@@ -223,4 +223,24 @@ describe('follow-redirects ', function() {
         .nodeify(done);
     });
   });
+
+  describe ('should honor 307 redirects', function () {
+    it('reuses previous request method', function (done) {
+      app.post('/a', redirectsTo(307, 'http://localhost:3600/b'));
+      app.post('/b', sendsJson({foo:'bar'}));
+
+      var options = {
+        path: '/a',
+        method: 'POST',
+        port: 3600
+      };
+
+      server.start(app)
+        .then(asPromise(function(resolve, reject){
+          var req = http.request(options, resolve).on('error', reject);
+          req.end();
+        }))
+        .nodeify(done);
+    });
+  });
 });
